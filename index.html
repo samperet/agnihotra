@@ -11,7 +11,7 @@
   <style>
     @font-face {
       font-family: "Samarkan";
-      src: url("assets/samarkan.ttf") format("truetype");
+      src: url("agnihotra.otf") format("truetype");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -571,7 +571,7 @@
       background:
         linear-gradient(90deg, rgba(4, 8, 7, 0.68), rgba(4, 8, 7, 0.34) 48%, rgba(4, 8, 7, 0.58)),
         linear-gradient(0deg, rgba(4, 8, 7, 0.72), rgba(4, 8, 7, 0.08) 46%, rgba(4, 8, 7, 0.38)),
-        url("assets/agnihotra-background.png") center / cover no-repeat;
+        url("agnihotra-background.png") center / cover no-repeat;
       color: #f6fbf8;
       touch-action: manipulation;
     }
@@ -829,7 +829,7 @@
     const form = document.querySelector("#timing-form");
     const soundButton = document.querySelector("#sound-button");
     const reminderState = new Set();
-    const bellAudio = new Audio("assets/meditation-bell.mp3");
+    const bellAudio = new Audio("meditation-bell.mp3");
     bellAudio.preload = "auto";
     let soundEnabled = false;
 
