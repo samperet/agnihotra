@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Agnihotra Clock">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#17201d">
+  <title>Agnihotra Clock</title>
+  <style>
+    @font-face {
+      font-family: "Samarkan";
+      src: url("assets/samarkan.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #17201d;
+      --muted: #5d6864;
+      --line: #d7ded9;
+      --panel: #fbfcfb;
+      --field: #ffffff;
+      --accent: #b33f27;
+      --accent-2: #186b74;
+      --wash: #edf6f3;
+      --warn: #8a4b00;
+      --display-font: "Samarkan", Papyrus, "Kohinoor Devanagari", "Devanagari Sangam MN", Georgia, serif;
+      font-family: "Avenir Next", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(140deg, rgba(237, 246, 243, 0.92), rgba(255, 251, 245, 0.86)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23d7ded9' stroke-width='1'%3E%3Cpath d='M0 70h140M70 0v140'/%3E%3Ccircle cx='70' cy='70' r='28'/%3E%3C/g%3E%3C/svg%3E");
+      color: var(--ink);
+    }
+
+    main {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+      padding: 8px 0 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 740px;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .rule {
+      max-width: 320px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 410px) 1fr;
+      gap: 24px;
+      padding-top: 24px;
+      align-items: start;
+    }
+
+    form,
+    .results,
+    .method {
+      border: 1px solid var(--line);
+      background: rgba(251, 252, 251, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 18px 50px rgba(23, 32, 29, 0.08);
+    }
+
+    form {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 11px;
+      background: var(--field);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 3px solid rgba(24, 107, 116, 0.18);
+      border-color: var(--accent-2);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 2px;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button[type="submit"] {
+      background: var(--accent);
+      color: white;
+      flex: 1;
+    }
+
+    button[type="button"] {
+      background: var(--wash);
+      color: var(--accent-2);
+      border: 1px solid rgba(24, 107, 116, 0.28);
+    }
+
+    #sound-button[aria-pressed="true"] {
+      background: #17201d;
+      border-color: #17201d;
+      color: #ffffff;
+    }
+
+    .results {
+      min-height: 360px;
+      overflow: hidden;
+    }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .result-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .coords {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    .times {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .time-card {
+      background: var(--panel);
+      padding: 22px;
+      min-height: 210px;
+      display: grid;
+      align-content: space-between;
+      gap: 18px;
+    }
+
+    .time-card strong {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .clock {
+      font-size: clamp(2.2rem, 7vw, 4.25rem);
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .subtime {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.35;
+    }
+
+    .delta {
+      color: var(--accent-2);
+      font-weight: 800;
+    }
+
+    .method {
+      margin-top: 24px;
+      padding: 18px 20px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .method h2 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 1rem;
+    }
+
+    .method p {
+      margin: 0;
+    }
+
+    .error {
+      display: none;
+      border: 1px solid rgba(138, 75, 0, 0.35);
+      background: #fff7e8;
+      color: var(--warn);
+      border-radius: 6px;
+      padding: 10px 12px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .error[aria-hidden="false"] {
+      display: block;
+    }
+
+    .phone-clock {
+      margin-bottom: 24px;
+      border: 1px solid #24312d;
+      background: #101714;
+      color: #f6fbf8;
+      border-radius: 8px;
+      padding: clamp(18px, 4vw, 32px);
+      box-shadow: 0 22px 60px rgba(16, 23, 20, 0.24);
+    }
+
+    .phone-clock-top {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: #a8bbb3;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.76rem;
+      text-align: center;
+    }
+
+    .date-stack {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      font-family: var(--display-font);
+    }
+
+    .date-stack b {
+      color: #f6fbf8;
+      font-size: clamp(1rem, 2.2vw, 1.45rem);
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+
+    .live-time {
+      margin-top: 12px;
+      font-size: clamp(2.6rem, 10vw, 6.5rem);
+      line-height: 0.95;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      font-family: var(--display-font);
+    }
+
+    .next-event {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .next-label {
+      color: #f1b29f;
+      font-size: clamp(1rem, 3vw, 1.35rem);
+      font-weight: 900;
+      font-family: var(--display-font);
+      letter-spacing: 0.02em;
+    }
+
+    .next-time {
+      color: #ffffff;
+      font-size: clamp(2.2rem, 7vw, 5.8rem);
+      line-height: 0.95;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      text-align: left;
+      font-family: var(--display-font);
+      white-space: nowrap;
+    }
+
+    .countdown {
+      color: #e8f6f1;
+      font-size: clamp(2rem, 8vw, 5rem);
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      text-align: left;
+    }
+
+    .countdown-label {
+      color: #a8bbb3;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: left;
+    }
+
+    .phone-clock.countdown-mode .live-time {
+      display: none;
+    }
+
+    .phone-clock.countdown-mode .next-time {
+      display: none;
+    }
+
+    .phone-clock.countdown-mode .countdown {
+      color: #ffdf8b;
+      font-size: clamp(4.2rem, 18vw, 12rem);
+    }
+
+    .mini-times {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .mini-time {
+      border: 1px solid rgba(232, 246, 241, 0.16);
+      border-radius: 6px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mini-time span {
+      display: block;
+      color: #a8bbb3;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mini-time b {
+      display: block;
+      margin-top: 5px;
+      color: #ffffff;
+      font-size: 1.35rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        width: min(100vw - 24px, 640px);
+        padding-top: 20px;
+      }
+
+      header,
+      .layout,
+      .times,
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        display: grid;
+        align-items: start;
+      }
+
+      form {
+        position: static;
+      }
+
+      .coords {
+        text-align: left;
+      }
+
+      .result-head {
+        display: grid;
+      }
+
+      .mini-times {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 620px) {
+      body {
+        min-height: 100svh;
+        overflow: hidden;
+        background: #101714;
+      }
+
+      main {
+        width: 100vw;
+        height: 100svh;
+        padding: 0;
+      }
+
+      header,
+      .results,
+      .method {
+        display: none;
+      }
+
+      .layout {
+        display: block;
+        height: 100%;
+        padding: 0;
+      }
+
+      form {
+        position: fixed;
+        right: 10px;
+        bottom: 10px;
+        z-index: 5;
+        width: min(420px, calc(100vw - 20px));
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px;
+        opacity: 0.14;
+        transition: opacity 160ms ease;
+      }
+
+      form:focus-within,
+      form:hover {
+        opacity: 0.98;
+      }
+
+      form label {
+        font-size: 0.72rem;
+      }
+
+      input {
+        min-height: 36px;
+        padding: 7px 9px;
+      }
+
+      button {
+        min-height: 36px;
+        padding: 7px 10px;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .phone-clock {
+        width: 100vw;
+        height: 100svh;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: max(16px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        align-content: stretch;
+      }
+
+      .phone-clock-top {
+        font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+      }
+
+      .live-time {
+        align-self: center;
+        margin: 0;
+        font-size: clamp(4.8rem, 18vw, 12rem);
+      }
+
+      .next-event {
+        margin-top: 0;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.58fr);
+        gap: 18px;
+        align-items: end;
+      }
+
+      .next-label {
+        font-size: clamp(1.1rem, 3vw, 2.4rem);
+      }
+
+      .next-time {
+        font-size: clamp(3rem, 9vw, 7.5rem);
+        text-align: right;
+      }
+
+      .countdown {
+        font-size: clamp(2.3rem, 8vw, 6.8rem);
+        text-align: right;
+      }
+
+      .countdown-label {
+        text-align: right;
+      }
+
+      .mini-times {
+        grid-template-columns: 1fr 1fr;
+        margin-top: 14px;
+      }
+
+      .phone-clock.countdown-mode {
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+      }
+
+      .phone-clock.countdown-mode .next-event {
+        align-self: center;
+      }
+
+      .phone-clock.countdown-mode .countdown {
+        font-size: clamp(6rem, 24vw, 16rem);
+      }
+    }
+
+    body.clock-only {
+      min-height: 100svh;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(4, 8, 7, 0.68), rgba(4, 8, 7, 0.34) 48%, rgba(4, 8, 7, 0.58)),
+        linear-gradient(0deg, rgba(4, 8, 7, 0.72), rgba(4, 8, 7, 0.08) 46%, rgba(4, 8, 7, 0.38)),
+        url("assets/agnihotra-background.png") center / cover no-repeat;
+      color: #f6fbf8;
+      touch-action: manipulation;
+    }
+
+    body.clock-only main {
+      width: 100vw;
+      height: 100svh;
+      padding: 0;
+    }
+
+    body.clock-only header,
+    body.clock-only .results,
+    body.clock-only .method,
+    body.clock-only .mini-times {
+      display: none;
+    }
+
+    body.clock-only .layout {
+      display: block;
+      height: 100%;
+      padding: 0;
+    }
+
+    body.clock-only .layout > div {
+      height: 100%;
+    }
+
+    body.clock-only .phone-clock {
+      width: 100vw;
+      height: 100svh;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      background: transparent;
+      padding: max(18px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      align-content: stretch;
+    }
+
+    body.clock-only .live-time {
+      align-self: center;
+      margin: 0;
+      font-size: clamp(4.5rem, 18vw, 14rem);
+      justify-self: center;
+      text-align: center;
+    }
+
+    body.clock-only .next-event {
+      margin: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: clamp(12px, 4vw, 42px);
+      align-items: end;
+    }
+
+    body.clock-only .next-label {
+      font-size: clamp(1.3rem, 4vw, 3.2rem);
+    }
+
+    body.clock-only .countdown-label {
+      margin-top: 10px;
+      text-align: left;
+      font-size: clamp(0.78rem, 1.4vw, 1rem);
+    }
+
+    body.clock-only .next-time {
+      text-align: right;
+      font-size: clamp(2.8rem, 7vw, 6.6rem);
+    }
+
+    body.clock-only .countdown {
+      text-align: right;
+      font-size: clamp(2.4rem, 8vw, 7rem);
+    }
+
+    body.clock-only .phone-clock.countdown-mode {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    body.clock-only .phone-clock.countdown-mode .next-event {
+      align-self: center;
+      grid-template-columns: 1fr;
+    }
+
+    body.clock-only .phone-clock.countdown-mode .next-time,
+    body.clock-only .phone-clock.countdown-mode .countdown,
+    body.clock-only .phone-clock.countdown-mode .countdown-label {
+      text-align: left;
+    }
+
+    body.clock-only .phone-clock.countdown-mode .countdown {
+      font-size: clamp(5rem, 22vw, 17rem);
+    }
+
+    body.clock-only .phone-clock:not(.countdown-mode) .countdown,
+    body.clock-only .phone-clock:not(.countdown-mode) .countdown-label {
+      display: none;
+    }
+
+    body.clock-only form {
+      position: fixed;
+      inset: auto 14px 14px auto;
+      z-index: 10;
+      width: min(440px, calc(100vw - 28px));
+      max-height: calc(100svh - 28px);
+      overflow: auto;
+      padding: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    body.clock-only.config-open form {
+      opacity: 0.98;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    body.clock-only form::before {
+      content: "Settings";
+      display: block;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    @media (orientation: portrait) {
+      body.clock-only .phone-clock {
+        grid-template-rows: auto minmax(0, 0.9fr) auto;
+      }
+
+      body.clock-only .next-event {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      body.clock-only .next-time,
+      body.clock-only .countdown {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body class="clock-only">
+  <main>
+    <header>
+      <div>
+        <h1>Agnihotra timing calculator</h1>
+      </div>
+      <p class="rule">
+        Calculates sunrise and sunset when the sun's center crosses the true horizon,
+        then compares them with ordinary apparent sunrise and sunset.
+      </p>
+    </header>
+
+    <section class="layout" aria-label="Calculator">
+      <form id="timing-form">
+        <input id="date" type="hidden" required>
+        <div class="field-grid">
+          <label>
+            Timezone offset from UTC
+            <input id="timezone" type="number" inputmode="decimal" min="-12" max="14" step="0.25" value="-4" required>
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label>
+            Latitude
+            <input id="latitude" type="text" inputmode="text" value="40.7128" placeholder="40.7128 or 44°18'39&quot;" required>
+          </label>
+          <label>
+            Longitude
+            <input id="longitude" type="text" inputmode="text" value="-74.0060" placeholder="-74.0060 or 74°0'21&quot;W" required>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="submit">Save</button>
+          <button id="sound-button" type="button" aria-pressed="false">Enable sound</button>
+        </div>
+
+        <div id="error" class="error" aria-live="polite" aria-hidden="true"></div>
+      </form>
+
+      <div>
+        <section id="phone-clock" class="phone-clock" aria-live="polite">
+          <div class="phone-clock-top">
+            <span class="date-stack">
+              <span>Agnihotra Clock</span>
+              <b id="clock-date">--</b>
+            </span>
+          </div>
+          <div id="live-time" class="live-time">--:--:--</div>
+          <div class="next-event">
+            <div>
+              <div id="next-label" class="next-label">Next event unavailable</div>
+              <div id="countdown-label" class="countdown-label">Time remaining</div>
+            </div>
+            <div>
+              <div id="next-time" class="next-time">--:--:--</div>
+              <div id="countdown" class="countdown">--:--:--</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="results" aria-live="polite">
+          <div class="result-head">
+            <div>
+              <h2 id="result-title">Timing for selected day</h2>
+            </div>
+            <div id="coords" class="coords"></div>
+          </div>
+
+          <div class="times">
+            <article class="time-card">
+              <div>
+                <strong>Sunrise Agnihotra</strong>
+                <div id="agni-rise" class="clock">--:--:--</div>
+              </div>
+              <div class="subtime">
+                <span>Ordinary apparent sunrise: <b id="visible-rise">--:--:--</b></span>
+                <span class="delta" id="rise-delta">--</span>
+              </div>
+            </article>
+
+            <article class="time-card">
+              <div>
+                <strong>Sunset Agnihotra</strong>
+                <div id="agni-set" class="clock">--:--:--</div>
+              </div>
+              <div class="subtime">
+                <span>Ordinary apparent sunset: <b id="visible-set">--:--:--</b></span>
+                <span class="delta" id="set-delta">--</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="method">
+          <h2>Calculation Rule</h2>
+          <p>
+            Agnihotra uses solar zenith 90.0 degrees, the sun's center on the geometric horizon.
+            The comparison times use zenith 90.833 degrees, the common apparent sunrise/sunset
+            correction for refraction and the sun's disk.
+          </p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#timing-form");
+    const soundButton = document.querySelector("#sound-button");
+    const reminderState = new Set();
+    const bellAudio = new Audio("assets/meditation-bell.mp3");
+    bellAudio.preload = "auto";
+    let soundEnabled = false;
+
+    const fields = {
+      phoneClock: document.querySelector("#phone-clock"),
+      date: document.querySelector("#date"),
+      timezone: document.querySelector("#timezone"),
+      latitude: document.querySelector("#latitude"),
+      longitude: document.querySelector("#longitude"),
+      error: document.querySelector("#error"),
+      title: document.querySelector("#result-title"),
+      coords: document.querySelector("#coords"),
+      agniRise: document.querySelector("#agni-rise"),
+      agniSet: document.querySelector("#agni-set"),
+      visibleRise: document.querySelector("#visible-rise"),
+      visibleSet: document.querySelector("#visible-set"),
+      riseDelta: document.querySelector("#rise-delta"),
+      setDelta: document.querySelector("#set-delta"),
+      clockDate: document.querySelector("#clock-date"),
+      liveTime: document.querySelector("#live-time"),
+      nextLabel: document.querySelector("#next-label"),
+      nextTime: document.querySelector("#next-time"),
+      countdownLabel: document.querySelector("#countdown-label"),
+      countdown: document.querySelector("#countdown")
+    };
+
+    fields.phoneClock.addEventListener("click", () => {
+      document.body.classList.toggle("config-open");
+    });
+
+    form.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+
+    soundButton.addEventListener("click", async () => {
+      await enableSound();
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      calculate();
+    });
+
+    for (const field of [fields.date, fields.timezone, fields.latitude, fields.longitude]) {
+      field.addEventListener("input", calculate);
+    }
+
+    setToday();
+    calculate();
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function calculate() {
+      const dateParts = fields.date.value.split("-").map(Number);
+      const [year, month, day] = dateParts;
+      const { lat, lon, offset } = readLocationFields();
+
+      if (!year || !month || !day || !Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(offset)) {
+        showError("Enter a valid date, latitude, longitude, and timezone offset.");
+        updateClockUnavailable();
+        return;
+      }
+
+      if (Math.abs(lat) >= 89.95 || lon < -180 || lon > 180 || offset < -12 || offset > 14) {
+        showError("Use latitude between -89.9 and 89.9, longitude between -180 and 180, and timezone offset between -12 and +14.");
+        updateClockUnavailable();
+        return;
+      }
+
+      const agniRise = eventUtcHours({ year, month, day, lat, lon, altitude: 0, rise: true });
+      const agniSet = eventUtcHours({ year, month, day, lat, lon, altitude: 0, rise: false });
+      const visibleRise = eventUtcHours({ year, month, day, lat, lon, altitude: -0.833, rise: true });
+      const visibleSet = eventUtcHours({ year, month, day, lat, lon, altitude: -0.833, rise: false });
+
+      if ([agniRise, agniSet, visibleRise, visibleSet].some((value) => value === null)) {
+        showError("No sunrise or sunset occurs for this date and latitude.");
+        updateClockUnavailable();
+        return;
+      }
+
+      hideError();
+      fields.title.textContent = new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC"
+      });
+      fields.coords.textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)} | UTC${formatOffset(offset)}`;
+      fields.agniRise.textContent = formatLocalTime(agniRise, offset);
+      fields.agniSet.textContent = formatLocalTime(agniSet, offset);
+      fields.visibleRise.textContent = formatLocalTime(visibleRise, offset);
+      fields.visibleSet.textContent = formatLocalTime(visibleSet, offset);
+
+      const riseDiff = (agniRise - visibleRise) * 60;
+      const setDiff = (visibleSet - agniSet) * 60;
+      fields.riseDelta.textContent = `Agnihotra sunrise is ${Math.abs(riseDiff).toFixed(1)} min ${riseDiff >= 0 ? "later" : "earlier"}.`;
+      fields.setDelta.textContent = `Agnihotra sunset is ${Math.abs(setDiff).toFixed(1)} min ${setDiff >= 0 ? "earlier" : "later"}.`;
+      updateClock();
+    }
+
+    function readLocationFields() {
+      return {
+        lat: parseCoordinate(fields.latitude.value),
+        lon: parseCoordinate(fields.longitude.value),
+        offset: Number(fields.timezone.value)
+      };
+    }
+
+    function updateClock() {
+      const { lat, lon, offset } = readLocationFields();
+      if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(offset)) {
+        updateClockUnavailable();
+        return;
+      }
+
+      const now = new Date();
+      const local = localDateParts(now, offset);
+      const todayRise = eventUtcHours({ year: local.year, month: local.month, day: local.day, lat, lon, altitude: 0, rise: true });
+      const todaySet = eventUtcHours({ year: local.year, month: local.month, day: local.day, lat, lon, altitude: 0, rise: false });
+
+      if (todayRise === null || todaySet === null) {
+        updateClockUnavailable();
+        return;
+      }
+
+      const localSeconds = local.hours * 3600 + local.minutes * 60 + local.seconds;
+      const riseSeconds = Math.round(normalize(todayRise + offset, 24) * 3600);
+      const setSeconds = Math.round(normalize(todaySet + offset, 24) * 3600);
+      let nextDate = {
+        year: local.year,
+        month: local.month,
+        day: local.day
+      };
+      let nextName = "Sunrise";
+      let nextSeconds = riseSeconds;
+      let secondsUntil = riseSeconds - localSeconds;
+
+      if (secondsUntil <= 0 && setSeconds - localSeconds > 0) {
+        nextName = "Sunset";
+        nextSeconds = setSeconds;
+        secondsUntil = setSeconds - localSeconds;
+      } else if (secondsUntil <= 0) {
+        const tomorrow = addDays(local.year, local.month, local.day, 1);
+        const tomorrowRise = eventUtcHours({ year: tomorrow.year, month: tomorrow.month, day: tomorrow.day, lat, lon, altitude: 0, rise: true });
+        if (tomorrowRise === null) {
+          updateClockUnavailable();
+          return;
+        }
+        nextDate = tomorrow;
+        nextName = "Sunrise";
+        nextSeconds = Math.round(normalize(tomorrowRise + offset, 24) * 3600);
+        secondsUntil = (86400 - localSeconds) + nextSeconds;
+      }
+
+      const dateText = formatDateLabel(local.year, local.month, local.day);
+      const nextDateText = formatDateLabel(nextDate.year, nextDate.month, nextDate.day);
+      const nextTimeText = secondsToClock(nextSeconds, { includeSeconds: true, hour12: true });
+      const countdownMode = secondsUntil <= 300;
+
+      fields.clockDate.textContent = dateText;
+      fields.liveTime.textContent = secondsToClock(localSeconds, { includeSeconds: false, hour12: true });
+      fields.nextLabel.textContent = `Next ${nextName} Agnihotra:`;
+      fields.nextTime.textContent = nextTimeText;
+      fields.countdownLabel.textContent = "Countdown";
+      fields.countdown.textContent = secondsToDuration(secondsUntil);
+      fields.phoneClock.classList.toggle("countdown-mode", countdownMode);
+      fields.nextLabel.textContent += nextDateText === dateText ? "" : ` · ${nextDateText}`;
+      maybePlayReminder(nextDate, nextName, nextSeconds, secondsUntil);
+    }
+
+    function updateClockUnavailable() {
+      fields.clockDate.textContent = "--";
+      fields.liveTime.textContent = "--:--:--";
+      fields.nextLabel.textContent = "Next event unavailable";
+      fields.nextTime.textContent = "--:--:--";
+      fields.countdownLabel.textContent = "Time remaining";
+      fields.countdown.textContent = "--:--:--";
+      fields.phoneClock.classList.remove("countdown-mode");
+    }
+
+    async function enableSound() {
+      soundEnabled = true;
+      soundButton.textContent = "Sound enabled";
+      soundButton.setAttribute("aria-pressed", "true");
+      await playBell();
+    }
+
+    function maybePlayReminder(nextDate, nextName, nextSeconds, secondsUntil) {
+      if (!soundEnabled) {
+        return;
+      }
+
+      const eventKey = `${nextDate.year}-${nextDate.month}-${nextDate.day}-${nextName}-${nextSeconds}`;
+      for (const threshold of [300, 60]) {
+        const key = `${eventKey}-${threshold}`;
+        if (secondsUntil <= threshold && secondsUntil > threshold - 2 && !reminderState.has(key)) {
+          reminderState.add(key);
+          playReminder(threshold);
+        }
+      }
+    }
+
+    function playReminder() {
+      playBell();
+    }
+
+    async function playBell() {
+      const audio = bellAudio.cloneNode(true);
+      audio.volume = 1;
+      try {
+        await audio.play();
+      } catch (error) {
+        soundEnabled = false;
+        soundButton.textContent = "Enable sound";
+        soundButton.setAttribute("aria-pressed", "false");
+      }
+    }
+
+    function parseCoordinate(rawValue) {
+      const value = rawValue.trim();
+      if (!value) {
+        return NaN;
+      }
+
+      const decimal = Number(value);
+      if (Number.isFinite(decimal)) {
+        return decimal;
+      }
+
+      const directionMatch = value.match(/[NSEW]/i);
+      const direction = directionMatch ? directionMatch[0].toUpperCase() : "";
+      const parts = value
+        .replace(/[NSEW]/ig, "")
+        .replace(/[−–—]/g, "-")
+        .match(/[+-]?\d+(?:\.\d+)?/g);
+
+      if (!parts) {
+        return NaN;
+      }
+
+      const degrees = Number(parts[0]);
+      const minutes = Number(parts[1] || 0);
+      const seconds = Number(parts[2] || 0);
+
+      if (![degrees, minutes, seconds].every(Number.isFinite) || minutes >= 60 || seconds >= 60) {
+        return NaN;
+      }
+
+      const explicitNegative = degrees < 0;
+      const directionalNegative = direction === "S" || direction === "W";
+      const magnitude = Math.abs(degrees) + (minutes / 60) + (seconds / 3600);
+      return explicitNegative || directionalNegative ? -magnitude : magnitude;
+    }
+
+    function eventUtcHours({ year, month, day, lat, lon, altitude, rise }) {
+      let previousMinute = 0;
+      let previousElevation = solarElevation(year, month, day, previousMinute, lat, lon) - altitude;
+      let bracket = null;
+
+      for (let minute = 5; minute <= 1440; minute += 5) {
+        const elevation = solarElevation(year, month, day, minute, lat, lon) - altitude;
+        const crossed = rise
+          ? previousElevation < 0 && elevation >= 0
+          : previousElevation >= 0 && elevation < 0;
+
+        if (crossed) {
+          bracket = [previousMinute, minute];
+          break;
+        }
+
+        previousMinute = minute;
+        previousElevation = elevation;
+      }
+
+      if (!bracket) {
+        return null;
+      }
+
+      let [low, high] = bracket;
+      for (let index = 0; index < 48; index += 1) {
+        const middle = (low + high) / 2;
+        const elevation = solarElevation(year, month, day, middle, lat, lon) - altitude;
+        const afterEvent = rise ? elevation >= 0 : elevation < 0;
+
+        if (afterEvent) {
+          high = middle;
+        } else {
+          low = middle;
+        }
+      }
+
+      return ((low + high) / 2) / 60;
+    }
+
+    function solarElevation(year, month, day, utcMinute, lat, lon) {
+      const centuries = (julianDay(year, month, day, utcMinute / 60) - 2451545) / 36525;
+      const solarTime = normalize(utcMinute + equationOfTime(centuries) + (4 * lon), 1440);
+      const hourAngle = (solarTime / 4) - 180;
+      const declination = sunDeclination(centuries);
+      const cosineZenith = (
+        Math.sin(toRad(lat)) * Math.sin(toRad(declination))
+        + Math.cos(toRad(lat)) * Math.cos(toRad(declination)) * Math.cos(toRad(hourAngle))
+      );
+
+      return toDeg(Math.asin(Math.max(-1, Math.min(1, cosineZenith))));
+    }
+
+    function julianDay(year, month, day, utcHour) {
+      let y = year;
+      let m = month;
+
+      if (m <= 2) {
+        y -= 1;
+        m += 12;
+      }
+
+      const a = Math.floor(y / 100);
+      const b = 2 - a + Math.floor(a / 4);
+      return Math.floor(365.25 * (y + 4716))
+        + Math.floor(30.6001 * (m + 1))
+        + day + b - 1524.5 + (utcHour / 24);
+    }
+
+    function geometricMeanLongitude(centuries) {
+      return normalize(280.46646 + centuries * (36000.76983 + centuries * 0.0003032), 360);
+    }
+
+    function geometricMeanAnomaly(centuries) {
+      return 357.52911 + centuries * (35999.05029 - 0.0001537 * centuries);
+    }
+
+    function earthOrbitEccentricity(centuries) {
+      return 0.016708634 - centuries * (0.000042037 + 0.0000001267 * centuries);
+    }
+
+    function sunEquationOfCenter(centuries) {
+      const anomaly = toRad(geometricMeanAnomaly(centuries));
+      return Math.sin(anomaly) * (1.914602 - centuries * (0.004817 + 0.000014 * centuries))
+        + Math.sin(2 * anomaly) * (0.019993 - 0.000101 * centuries)
+        + Math.sin(3 * anomaly) * 0.000289;
+    }
+
+    function apparentSunLongitude(centuries) {
+      const omega = 125.04 - (1934.136 * centuries);
+      return geometricMeanLongitude(centuries)
+        + sunEquationOfCenter(centuries)
+        - 0.00569
+        - (0.00478 * Math.sin(toRad(omega)));
+    }
+
+    function meanObliquity(centuries) {
+      const seconds = 21.448 - centuries * (46.815 + centuries * (0.00059 - centuries * 0.001813));
+      return 23 + ((26 + (seconds / 60)) / 60);
+    }
+
+    function obliquityCorrection(centuries) {
+      return meanObliquity(centuries)
+        + (0.00256 * Math.cos(toRad(125.04 - 1934.136 * centuries)));
+    }
+
+    function sunDeclination(centuries) {
+      return toDeg(Math.asin(
+        Math.sin(toRad(obliquityCorrection(centuries)))
+        * Math.sin(toRad(apparentSunLongitude(centuries)))
+      ));
+    }
+
+    function equationOfTime(centuries) {
+      const epsilon = toRad(obliquityCorrection(centuries));
+      const meanLongitude = toRad(geometricMeanLongitude(centuries));
+      const eccentricity = earthOrbitEccentricity(centuries);
+      const anomaly = toRad(geometricMeanAnomaly(centuries));
+      const y = Math.tan(epsilon / 2) ** 2;
+      const minutes = y * Math.sin(2 * meanLongitude)
+        - 2 * eccentricity * Math.sin(anomaly)
+        + 4 * eccentricity * y * Math.sin(anomaly) * Math.cos(2 * meanLongitude)
+        - 0.5 * y * y * Math.sin(4 * meanLongitude)
+        - 1.25 * eccentricity * eccentricity * Math.sin(2 * anomaly);
+
+      return toDeg(minutes) * 4;
+    }
+
+    function formatLocalTime(utcHours, offset) {
+      let totalSeconds = Math.round(normalize(utcHours + offset, 24) * 3600);
+      totalSeconds = normalize(totalSeconds, 86400);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+    }
+
+    function localDateParts(date, offset) {
+      const shifted = new Date(date.getTime() + offset * 3600000);
+      return {
+        year: shifted.getUTCFullYear(),
+        month: shifted.getUTCMonth() + 1,
+        day: shifted.getUTCDate(),
+        hours: shifted.getUTCHours(),
+        minutes: shifted.getUTCMinutes(),
+        seconds: shifted.getUTCSeconds()
+      };
+    }
+
+    function addDays(year, month, day, count) {
+      const date = new Date(Date.UTC(year, month - 1, day + count));
+      return {
+        year: date.getUTCFullYear(),
+        month: date.getUTCMonth() + 1,
+        day: date.getUTCDate()
+      };
+    }
+
+    function secondsToClock(totalSeconds, options = {}) {
+      const { includeSeconds = true, hour12 = false } = options;
+      let seconds = normalize(Math.round(totalSeconds), 86400);
+      const hours24 = Math.floor(seconds / 3600);
+      seconds %= 3600;
+      const minutes = Math.floor(seconds / 60);
+      seconds %= 60;
+
+      if (hour12) {
+        const period = hours24 >= 12 ? "PM" : "AM";
+        const hours12 = hours24 % 12 || 12;
+        const parts = includeSeconds
+          ? [hours12, minutes, seconds]
+          : [hours12, minutes];
+        return `${parts.map((value, index) => index === 0 ? String(value) : String(value).padStart(2, "0")).join(":")} ${period}`;
+      }
+
+      const parts = includeSeconds ? [hours24, minutes, seconds] : [hours24, minutes];
+      return parts.map((value) => String(value).padStart(2, "0")).join(":");
+    }
+
+    function secondsToDuration(totalSeconds) {
+      let seconds = Math.max(0, Math.round(totalSeconds));
+      const hours = Math.floor(seconds / 3600);
+      seconds %= 3600;
+      const minutes = Math.floor(seconds / 60);
+      seconds %= 60;
+      return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+    }
+
+    function formatOffset(offset) {
+      const sign = offset >= 0 ? "+" : "-";
+      const absolute = Math.abs(offset);
+      const hours = Math.floor(absolute);
+      const minutes = Math.round((absolute - hours) * 60);
+      return `${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    }
+
+    function formatDateLabel(year, month, day) {
+      return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC"
+      });
+    }
+
+    function setToday() {
+      const now = new Date();
+      const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+      fields.date.value = localDate.toISOString().slice(0, 10);
+    }
+
+    function showError(message) {
+      fields.error.textContent = message;
+      fields.error.setAttribute("aria-hidden", "false");
+    }
+
+    function hideError() {
+      fields.error.textContent = "";
+      fields.error.setAttribute("aria-hidden", "true");
+    }
+
+    function toRad(value) {
+      return value * Math.PI / 180;
+    }
+
+    function toDeg(value) {
+      return value * 180 / Math.PI;
+    }
+
+    function normalize(value, range) {
+      return ((value % range) + range) % range;
+    }
+  </script>
+</body>
+</html>
