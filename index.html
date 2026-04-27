@@ -7,6 +7,10 @@
   <meta name="apple-mobile-web-app-title" content="Agnihotra Clock">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#17201d">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <title>Agnihotra Clock</title>
   <style>
     @font-face {
@@ -280,6 +284,11 @@
       box-shadow: 0 22px 60px rgba(16, 23, 20, 0.24);
     }
 
+    .phone-clock,
+    body.clock-only main {
+      height: 100vh;
+    }
+
     .phone-clock-top {
       display: grid;
       justify-items: center;
@@ -320,6 +329,28 @@
       display: grid;
       justify-items: center;
       align-content: center;
+    }
+
+    .moon-phase {
+      position: absolute;
+      right: max(18px, env(safe-area-inset-right));
+      top: max(18px, env(safe-area-inset-top));
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      color: var(--clock-ink);
+      font-family: var(--display-font);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .moon-phase canvas {
+      width: 54px;
+      height: 54px;
+      display: block;
+      filter: drop-shadow(0 2px 3px rgba(255, 240, 190, 0.35));
     }
 
     .next-event {
@@ -575,6 +606,7 @@
     }
 
     body.clock-only {
+      min-height: 100vh;
       min-height: 100svh;
       overflow: hidden;
       background: url("agnihotra-background.png") center / cover no-repeat;
@@ -584,6 +616,7 @@
 
     body.clock-only main {
       width: 100vw;
+      height: 100vh;
       height: 100svh;
       padding: 0;
     }
@@ -607,6 +640,7 @@
 
     body.clock-only .phone-clock {
       width: 100vw;
+      height: 100vh;
       height: 100svh;
       margin: 0;
       border: 0;
@@ -716,6 +750,7 @@
       inset: auto 14px 14px auto;
       z-index: 10;
       width: min(440px, calc(100vw - 28px));
+      max-height: calc(100vh - 28px);
       max-height: calc(100svh - 28px);
       overflow: auto;
       padding: 14px;
@@ -791,6 +826,7 @@
 
         <div class="actions">
           <button type="submit">Save</button>
+          <button id="location-button" type="button">Use current location</button>
           <button id="sound-button" type="button" aria-pressed="false">Enable sound</button>
         </div>
 
@@ -799,6 +835,10 @@
 
       <div>
         <section id="phone-clock" class="phone-clock" aria-live="polite">
+          <div class="moon-phase" aria-label="Current moon phase">
+            <canvas id="moon-canvas" width="108" height="108"></canvas>
+            <span id="moon-label">Moon</span>
+          </div>
           <div class="phone-clock-top">
             <span class="date-stack">
               <span>Agnihotra Clock</span>
@@ -868,6 +908,7 @@
   <script>
     const form = document.querySelector("#timing-form");
     const soundButton = document.querySelector("#sound-button");
+    const locationButton = document.querySelector("#location-button");
     const reminderState = new Set();
     const bellAudio = new Audio("meditation-bell.mp3");
     bellAudio.preload = "auto";
@@ -893,7 +934,9 @@
       nextLabel: document.querySelector("#next-label"),
       nextTime: document.querySelector("#next-time"),
       countdownLabel: document.querySelector("#countdown-label"),
-      countdown: document.querySelector("#countdown")
+      countdown: document.querySelector("#countdown"),
+      moonCanvas: document.querySelector("#moon-canvas"),
+      moonLabel: document.querySelector("#moon-label")
     };
 
     fields.phoneClock.addEventListener("click", () => {
@@ -906,6 +949,10 @@
 
     soundButton.addEventListener("click", async () => {
       await enableSound();
+    });
+
+    locationButton.addEventListener("click", () => {
+      useCurrentLocation();
     });
 
     form.addEventListener("submit", (event) => {
@@ -1027,7 +1074,7 @@
 
       const dateText = formatDateLabel(local.year, local.month, local.day);
       const nextDateText = formatDateLabel(nextDate.year, nextDate.month, nextDate.day);
-      const nextTimeText = secondsToClock(nextSeconds, { includeSeconds: true, hour12: true });
+      const nextTimeText = secondsToHoursMinutes(secondsUntil);
       const countdownMode = secondsUntil <= 300;
 
       fields.clockDate.textContent = dateText;
@@ -1038,6 +1085,7 @@
       fields.countdown.textContent = secondsToDuration(secondsUntil);
       fields.phoneClock.classList.toggle("countdown-mode", countdownMode);
       fields.nextLabel.textContent += nextDateText === dateText ? "" : ` · ${nextDateText}`;
+      updateMoonPhase(local.year, local.month, local.day);
       maybePlayReminder(nextDate, nextName, nextSeconds, secondsUntil);
     }
 
@@ -1048,6 +1096,7 @@
       fields.nextTime.textContent = "--:--:--";
       fields.countdownLabel.textContent = "Time remaining";
       fields.countdown.textContent = "--:--:--";
+      fields.moonLabel.textContent = "Moon";
       fields.phoneClock.classList.remove("countdown-mode");
     }
 
@@ -1311,6 +1360,119 @@
       const minutes = Math.floor(seconds / 60);
       seconds %= 60;
       return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+    }
+
+    function secondsToHoursMinutes(totalSeconds) {
+      const totalMinutes = Math.max(0, Math.ceil(totalSeconds / 60));
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      if (hours === 0) {
+        return `${minutes}m`;
+      }
+      return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+    }
+
+    function updateMoonPhase(year, month, day) {
+      const phase = moonPhase(year, month, day);
+      fields.moonLabel.textContent = phase.name;
+      drawMoon(fields.moonCanvas, phase.illumination, phase.waxing);
+    }
+
+    function moonPhase(year, month, day) {
+      const synodicMonth = 29.530588853;
+      const knownNewMoon = 2451550.1;
+      const age = normalize(julianDay(year, month, day, 12) - knownNewMoon, synodicMonth);
+      const fraction = age / synodicMonth;
+      const illumination = (1 - Math.cos(2 * Math.PI * fraction)) / 2;
+      const waxing = fraction < 0.5;
+      const names = [
+        [0.03, "New"],
+        [0.22, "Waxing"],
+        [0.28, "First Qtr"],
+        [0.47, "Waxing"],
+        [0.53, "Full"],
+        [0.72, "Waning"],
+        [0.78, "Last Qtr"],
+        [0.97, "Waning"],
+        [1, "New"]
+      ];
+      const match = names.find(([limit]) => fraction < limit);
+      return {
+        illumination,
+        waxing,
+        name: match ? match[1] : "Moon"
+      };
+    }
+
+    function drawMoon(canvas, illumination, waxing) {
+      const context = canvas.getContext("2d");
+      const size = canvas.width;
+      const center = size / 2;
+      const radius = size * 0.42;
+      context.clearRect(0, 0, size, size);
+
+      context.save();
+      context.beginPath();
+      context.arc(center, center, radius, 0, Math.PI * 2);
+      context.clip();
+      context.fillStyle = "#1c1c1c";
+      context.fillRect(0, 0, size, size);
+
+      context.fillStyle = "#f6efe0";
+      const litWidth = Math.max(0.02, illumination) * radius * 2;
+      const x = waxing ? center + radius - litWidth : center - radius;
+      context.fillRect(x, center - radius, litWidth, radius * 2);
+
+      const gradient = context.createRadialGradient(
+        center - radius * 0.28,
+        center - radius * 0.28,
+        radius * 0.12,
+        center,
+        center,
+        radius
+      );
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0.55)");
+      gradient.addColorStop(0.58, "rgba(255, 255, 255, 0.08)");
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0.22)");
+      context.fillStyle = gradient;
+      context.fillRect(center - radius, center - radius, radius * 2, radius * 2);
+      context.restore();
+
+      context.strokeStyle = "rgba(51, 51, 51, 0.58)";
+      context.lineWidth = 3;
+      context.beginPath();
+      context.arc(center, center, radius, 0, Math.PI * 2);
+      context.stroke();
+    }
+
+    function useCurrentLocation() {
+      if (!navigator.geolocation) {
+        showError("Location is not available in this browser.");
+        return;
+      }
+
+      locationButton.textContent = "Locating...";
+      locationButton.disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fields.latitude.value = position.coords.latitude.toFixed(6);
+          fields.longitude.value = position.coords.longitude.toFixed(6);
+          hideError();
+          calculate();
+          locationButton.textContent = "Use current location";
+          locationButton.disabled = false;
+        },
+        () => {
+          showError("Location permission was denied or unavailable.");
+          locationButton.textContent = "Use current location";
+          locationButton.disabled = false;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 300000
+        }
+      );
     }
 
     function formatOffset(offset) {
