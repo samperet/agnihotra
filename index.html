@@ -387,6 +387,23 @@
       display: grid;
     }
 
+    button.moon-settings {
+      position: absolute;
+      top: max(20px, env(safe-area-inset-top));
+      left: max(20px, env(safe-area-inset-left));
+      z-index: 21;
+      border: 0;
+      border-radius: 50%;
+      min-height: 0;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      cursor: pointer;
+      line-height: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
     .moon-panel {
       display: grid;
       justify-items: center;
@@ -1123,6 +1140,12 @@
   </main>
 
   <div id="moon-overlay" class="moon-overlay" aria-hidden="true" role="dialog" aria-label="Moon phase details">
+    <button id="moon-settings-button" class="moon-settings" type="button" aria-label="Open settings">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
     <div class="moon-panel">
       <canvas id="moon-large-canvas" width="420" height="420"></canvas>
       <h2 id="moon-phase-name">Moon</h2>
@@ -1137,6 +1160,7 @@
     const locationButton = document.querySelector("#location-button");
     const moonButton = document.querySelector("#moon-button");
     const moonOverlay = document.querySelector("#moon-overlay");
+    const moonSettingsButton = document.querySelector("#moon-settings-button");
     const reminderState = new Set();
     const bellAudio = new Audio("meditation-bell.mp3");
     bellAudio.preload = "auto";
@@ -1172,8 +1196,26 @@
     };
 
     fields.phoneClock.addEventListener("click", () => {
-      document.body.classList.toggle("config-open");
+      // An open settings panel is dismissed by a tap on the clock face;
+      // otherwise tapping the face toggles browser fullscreen.
+      if (document.body.classList.contains("config-open")) {
+        document.body.classList.remove("config-open");
+        return;
+      }
+      toggleFullscreen();
     });
+
+    function toggleFullscreen() {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        exit?.call(document);
+        return;
+      }
+      const root = document.documentElement;
+      const request = root.requestFullscreen || root.webkitRequestFullscreen;
+      const result = request?.call(root);
+      if (result && typeof result.catch === "function") result.catch(() => {});
+    }
 
     document.querySelector(".next-event").addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1192,6 +1234,12 @@
 
     moonOverlay.addEventListener("click", () => {
       moonOverlay.setAttribute("aria-hidden", "true");
+    });
+
+    moonSettingsButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      moonOverlay.setAttribute("aria-hidden", "true");
+      document.body.classList.add("config-open");
     });
 
     soundButton.addEventListener("click", async () => {
