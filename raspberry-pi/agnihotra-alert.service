@@ -1,0 +1,16 @@
+[Unit]
+Description=Agnihotra GPIO alert daemon
+After=network-online.target time-sync.target
+Wants=time-sync.target
+
+[Service]
+Type=simple
+# Adjust User and paths to match your install location.
+User=pi
+WorkingDirectory=/home/pi/agnihotra-pi
+ExecStart=/usr/bin/python3 /home/pi/agnihotra-pi/agnihotra_alert.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
