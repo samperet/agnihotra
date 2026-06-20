@@ -387,21 +387,153 @@
       display: grid;
     }
 
-    button.moon-settings {
+    button.moon-settings,
+    button.moon-help {
       position: absolute;
       top: max(20px, env(safe-area-inset-top));
-      left: max(20px, env(safe-area-inset-left));
       z-index: 21;
       border: 0;
       border-radius: 50%;
       min-height: 0;
-      padding: 12px;
+      width: 52px;
+      height: 52px;
+      padding: 0;
+      display: grid;
+      place-items: center;
       background: rgba(255, 255, 255, 0.12);
       color: #ffffff;
       cursor: pointer;
       line-height: 0;
       -webkit-appearance: none;
       appearance: none;
+    }
+
+    button.moon-settings {
+      left: max(20px, env(safe-area-inset-left));
+    }
+
+    button.moon-help {
+      left: calc(max(20px, env(safe-area-inset-left)) + 62px);
+      font-family: var(--display-font);
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .info-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      background: rgba(16, 23, 20, 0.97);
+      color: #f6fbf8;
+    }
+
+    .info-overlay[aria-hidden="false"] {
+      display: block;
+    }
+
+    .info-dialog {
+      height: 100%;
+      width: min(820px, 100vw);
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      padding: max(18px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+               max(18px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    }
+
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .info-header h2 {
+      margin: 0;
+      font-family: var(--display-font);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+    }
+
+    button.info-close {
+      width: 44px;
+      height: 44px;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 1.6rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .info-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    button.info-tab {
+      flex: 1;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 6px;
+      background: transparent;
+      color: #cfe3db;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button.info-tab.active {
+      background: #ffffff;
+      color: #101714;
+      border-color: #ffffff;
+    }
+
+    .info-content {
+      overflow-y: auto;
+      line-height: 1.6;
+      padding-right: 6px;
+    }
+
+    .info-section[hidden] {
+      display: none;
+    }
+
+    .info-content h3 {
+      margin: 18px 0 6px;
+      font-size: 1.05rem;
+      color: #ffffff;
+    }
+
+    .info-content h3:first-child {
+      margin-top: 0;
+    }
+
+    .info-content p {
+      margin: 0 0 10px;
+    }
+
+    .info-content ul {
+      margin: 0 0 10px;
+      padding-left: 20px;
+    }
+
+    .info-content li {
+      margin-bottom: 6px;
+    }
+
+    .info-content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1px 5px;
+      border-radius: 4px;
     }
 
     .moon-panel {
@@ -1146,10 +1278,117 @@
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
       </svg>
     </button>
+    <button id="moon-help-button" class="moon-help" type="button" aria-label="About Agnihotra">?</button>
     <div class="moon-panel">
       <canvas id="moon-large-canvas" width="420" height="420"></canvas>
       <h2 id="moon-phase-name">Moon</h2>
       <p id="moon-next-event">Next moon event</p>
+    </div>
+  </div>
+
+  <div id="info-overlay" class="info-overlay" aria-hidden="true" role="dialog" aria-label="About Agnihotra">
+    <div class="info-dialog">
+      <div class="info-header">
+        <h2>About Agnihotra</h2>
+        <button id="info-close" class="info-close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="info-tabs" role="tablist">
+        <button class="info-tab active" type="button" data-level="beginner">Beginner</button>
+        <button class="info-tab" type="button" data-level="intermediate">Intermediate</button>
+        <button class="info-tab" type="button" data-level="expert">Expert</button>
+      </div>
+      <div class="info-content">
+        <section class="info-section" data-level="beginner">
+          <h3>What is Agnihotra?</h3>
+          <p>
+            Agnihotra is a small daily fire practice from the Vedic tradition. You make a
+            tiny fire and offer rice to it at the two precise moments the day turns:
+            <b>sunrise</b> and <b>sunset</b>. It takes only a few minutes and is done for
+            inner calm and, practitioners believe, a cleaner, more peaceful atmosphere.
+          </p>
+          <h3>What you actually do</h3>
+          <ul>
+            <li>Light a small fire of dried cow-dung cakes and ghee inside a little copper pyramid.</li>
+            <li>At the exact second of sunrise or sunset, offer two pinches of unbroken rice coated in ghee.</li>
+            <li>As you offer, you say two short mantras (one set for sunrise, a different set for sunset).</li>
+            <li>Sit quietly by the fire for a few minutes afterward. The ash is kept and considered beneficial.</li>
+          </ul>
+          <h3>Why this app exists</h3>
+          <p>
+            The whole practice depends on hitting the <b>exact</b> sunrise/sunset time, which
+            is slightly different from the time a weather app shows. This clock calculates the
+            correct moment for your location and counts you down to it. Tap the screen to see
+            the next event, turn on the bell for an audible reminder, and tap the clock face for
+            full-screen mode.
+          </p>
+        </section>
+
+        <section class="info-section" data-level="intermediate" hidden>
+          <h3>The timing rule (the key idea)</h3>
+          <p>
+            Ordinary "sunrise" is when the sun's <b>upper edge</b> appears, including the way the
+            atmosphere bends light — that's solar zenith <b>90.833°</b>. Agnihotra instead uses
+            the sun's <b>geometric center on the true horizon</b> — zenith <b>90.0°</b>, with no
+            refraction allowance. The result: <b>Agnihotra sunrise is a few minutes later</b>, and
+            <b>Agnihotra sunset a few minutes earlier</b>, than almanac times.
+          </p>
+          <h3>Materials &amp; method</h3>
+          <ul>
+            <li><b>Vessel:</b> an inverted copper pyramid of specific proportions.</li>
+            <li><b>Fuel:</b> dried cow-dung cakes and cow's ghee (clarified butter).</li>
+            <li><b>Offering:</b> whole, unbroken brown rice grains coated in ghee.</li>
+            <li><b>Process:</b> light the fire a few minutes early so it's blazing, then offer at the precise time while chanting.</li>
+          </ul>
+          <h3>The mantras</h3>
+          <p><b>Sunrise:</b> "Sūryāya svāhā, Sūryāya idam na mama; Prajāpataye svāhā, Prajāpataye idam na mama."</p>
+          <p><b>Sunset:</b> "Agnaye svāhā, Agnaye idam na mama; Prajāpataye svāhā, Prajāpataye idam na mama."</p>
+          <p>
+            <i>Svāhā</i> marks the offering; <i>idam na mama</i> means "this is not mine" — an
+            expression of non-attachment. Sunrise honors Sūrya (the sun); sunset honors Agni
+            (fire); both honor Prajāpati (the creative principle).
+          </p>
+          <h3>Where it comes from</h3>
+          <p>
+            Agnihotra is the simplest of the Vedic <i>yajña</i> (fire offering) rites. Its modern
+            revival is associated with the "Homa Therapy" / Five-fold Path teachings of Shree
+            Vasant Paranjpe.
+          </p>
+        </section>
+
+        <section class="info-section" data-level="expert" hidden>
+          <h3>How the time is computed</h3>
+          <p>
+            The clock uses the standard <b>NOAA / Meeus solar-position algorithm</b>:
+          </p>
+          <ul>
+            <li>Convert the date to a <b>Julian Day</b>, then a Julian century <code>T = (JD − 2451545) / 36525</code>.</li>
+            <li>Compute the sun's mean longitude, mean anomaly, orbital eccentricity, and the <b>equation of center</b> → apparent ecliptic longitude λ.</li>
+            <li>Obliquity ε gives <b>declination</b> <code>δ = asin(sin ε · sin λ)</code>, plus the <b>equation of time</b> E.</li>
+            <li>Solar elevation: <code>sin(h) = sin φ·sin δ + cos φ·cos δ·cos H</code>, where local solar time = UTC + E + 4·longitude.</li>
+            <li>Find where elevation crosses the target: bracket a ±12 h window around solar noon in 5-minute steps, then <b>48 rounds of bisection</b> → ~1-second precision.</li>
+          </ul>
+          <h3>The 90.0° vs 90.833° split</h3>
+          <p>
+            The 0.833° difference is <b>~34′ of atmospheric refraction</b> plus the sun's
+            <b>~16′ semi-diameter</b>. Agnihotra zeroes both out (altitude = 0, sun's center,
+            geometric horizon), so it reports the true geometric crossing rather than the visual one.
+          </p>
+          <h3>Caveats</h3>
+          <p>
+            The model assumes a <b>sea-level horizon and standard refraction</b>; it does not
+            account for your <b>elevation</b> or local terrain (mountains, buildings), and real
+            refraction varies with temperature and pressure. These are second-order next to the
+            90.0° definition itself.
+          </p>
+          <h3>On significance</h3>
+          <p>
+            Keep two things separate: the <b>timing mathematics</b> is ordinary, well-established
+            astronomy and is solid. The <b>efficacy claims</b> (atmospheric purification and so on)
+            come from the tradition and a handful of small studies, and are not established
+            mainstream science.
+          </p>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -1161,6 +1400,8 @@
     const moonButton = document.querySelector("#moon-button");
     const moonOverlay = document.querySelector("#moon-overlay");
     const moonSettingsButton = document.querySelector("#moon-settings-button");
+    const moonHelpButton = document.querySelector("#moon-help-button");
+    const infoOverlay = document.querySelector("#info-overlay");
     const reminderState = new Set();
     const bellAudio = new Audio("meditation-bell.mp3");
     bellAudio.preload = "auto";
@@ -1241,6 +1482,28 @@
       moonOverlay.setAttribute("aria-hidden", "true");
       document.body.classList.add("config-open");
     });
+
+    moonHelpButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      moonOverlay.setAttribute("aria-hidden", "true");
+      infoOverlay.setAttribute("aria-hidden", "false");
+    });
+
+    document.querySelector("#info-close").addEventListener("click", () => {
+      infoOverlay.setAttribute("aria-hidden", "true");
+    });
+
+    for (const tab of document.querySelectorAll(".info-tab")) {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.level;
+        for (const t of document.querySelectorAll(".info-tab")) {
+          t.classList.toggle("active", t.dataset.level === target);
+        }
+        for (const section of document.querySelectorAll(".info-section")) {
+          section.hidden = section.dataset.level !== target;
+        }
+      });
+    }
 
     soundButton.addEventListener("click", async () => {
       await enableSound();
