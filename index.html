@@ -1141,7 +1141,6 @@
     const bellAudio = new Audio("meditation-bell.mp3");
     bellAudio.preload = "auto";
     let soundEnabled = false;
-    let showTimeOfEvent = false;
     let forceCountdownMode = false;
 
     const fields = {
@@ -1178,8 +1177,7 @@
 
     document.querySelector(".next-event").addEventListener("click", (event) => {
       event.stopPropagation();
-      showTimeOfEvent = !showTimeOfEvent;
-      updateClock();
+      setForceCountdown(!forceCountdownMode);
     });
 
     form.addEventListener("click", (event) => {
@@ -1201,11 +1199,15 @@
     });
 
     forceCountdownButton.addEventListener("click", () => {
-      forceCountdownMode = !forceCountdownMode;
+      setForceCountdown(!forceCountdownMode);
+    });
+
+    function setForceCountdown(enabled) {
+      forceCountdownMode = enabled;
       forceCountdownButton.setAttribute("aria-pressed", String(forceCountdownMode));
       forceCountdownButton.textContent = forceCountdownMode ? "Exit countdown test" : "Test countdown";
       updateClock();
-    });
+    }
 
     locationButton.addEventListener("click", () => {
       useCurrentLocation();
@@ -1343,9 +1345,7 @@
       fields.clockDate.textContent = dateText;
       fields.liveTime.textContent = secondsToClock(localSeconds, { includeSeconds: false, hour12: true });
       fields.nextLabel.textContent = `${nextName} Agnihotra:`;
-      fields.nextTime.textContent = showTimeOfEvent
-        ? secondsToClock(nextSeconds, { includeSeconds: false, hour12: true })
-        : nextTimeText;
+      fields.nextTime.textContent = nextTimeText;
       fields.countdownLabel.textContent = "Countdown";
       fields.countdown.textContent = secondsToCountdownMinutesSeconds(countdownSeconds);
       fields.mantra.innerHTML = mantraForEvent(nextName);
