@@ -57,11 +57,10 @@ mkdir -p ~/agnihotra-pi && cd ~/agnihotra-pi
 # copy agnihotra_alert.py here (and meditation-bell.mp3 from the repo, optional)
 
 # gpiozero is preinstalled on Raspberry Pi OS. If missing:
-sudo apt update && sudo apt install -y python3-gpiozero
-# Pi 5 needs the lgpio backend:
-sudo apt install -y python3-lgpio
+sudo apt update && sudo apt install -y python3-gpiozero python3-rpi.gpio
+# (Pi 5 only — not the Zero — needs the lgpio backend instead: python3-lgpio)
 
-# Optional sound playback:
+# Optional sound playback (see the Pi Zero note below before relying on this):
 sudo apt install -y mpg123
 ```
 
@@ -70,6 +69,29 @@ Make sure the Pi's clock is correct (timezone + NTP):
 sudo raspi-config        # Localisation Options -> Timezone
 timedatectl              # check "System clock synchronized: yes"
 ```
+
+---
+
+## Pi Zero notes
+
+The Zero / Zero W / Zero 2 W all run this script well — it's very light. Two
+things specific to the Zero:
+
+- **Use the buzzer or LED (Option A/B), not the mp3.** The Zero has **no analog
+  audio jack and no onboard DAC** — sound only comes out over mini-HDMI, a USB
+  sound card, or an I²S DAC HAT. So a GPIO **active buzzer is the most natural
+  alert** on a Zero. If you want the bell, leave `SOUND_FILE = None` and add one
+  of those audio outputs, or just trigger an external chime via a relay.
+- **Timekeeping.** The accuracy of the alerts depends on the Pi's clock.
+  - **Zero W / Zero 2 W:** have WiFi → enable it (`sudo raspi-config`) so NTP
+    keeps the clock correct automatically. Nothing else needed.
+  - **Original Zero (no wireless):** has no network, so the clock won't sync on
+    its own. Add a small **RTC module** (e.g. DS3231 on I²C) so it keeps correct
+    time across reboots, or set the clock manually with `sudo date -s "..."`.
+    Without correct time the computed sunrise/sunset will be off.
+
+The 40-pin GPIO header is identical to other Pis; on most Zero boards it ships
+**unpopulated**, so you may need to solder a header on first.
 
 ---
 
